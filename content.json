@@ -1,0 +1,66 @@
+{
+  "news": [
+    {
+      "title": "Global Climate Summit Reaches Historic Agreement",
+      "category": "Environment",
+      "time": "2 hours ago",
+      "excerpt": "World leaders unite on unprecedented climate action plan, setting ambitious targets for carbon neutrality by 2035...",
+      "href": "articles/climate-summit.html"
+    },
+    {
+      "title": "Tech Giants Announce AI Ethics Initiative",
+      "category": "Technology",
+      "time": "5 hours ago",
+      "excerpt": "Major technology companies collaborate on new standards for responsible AI development and deployment...",
+      "href": "articles/ai-ethics-initiative.html"
+    },
+    {
+      "title": "Space Tourism Industry Sees Major Breakthrough",
+      "category": "Space",
+      "time": "8 hours ago",
+      "excerpt": "New propulsion technology makes space travel more accessible and affordable for civilian passengers...",
+      "href": "articles/space-tourism-breakthrough.html"
+    },
+    {
+      "title": "Revolutionary Medical Treatment Shows Promise",
+      "category": "Health",
+      "time": "12 hours ago",
+      "excerpt": "Clinical trials reveal breakthrough therapy could transform treatment for rare genetic disorders...",
+      "href": "articles/medical-treatment-promise.html"
+    },
+    {
+      "title": "Breakthrough in AI Research Promises Safer Autonomous Systems",
+      "category": "Technology",
+      "time": "1 hour ago",
+      "excerpt": "New framework introduces multiple safety layers for AI systems, reducing critical incidents by 95%...",
+      "href": "breakthrough-in-ai.html"
+    },
+    {
+      "title": "Green Energy Revolution Accelerates Global Transition",
+      "category": "Environment",
+      "time": "3 hours ago",
+      "excerpt": "Renewable energy investments exceed $300 billion as solar and wind power installations hit record levels...",
+      "href": "green-energy-revolution.html"
+    }
+  ],
+  "videos": [
+    {
+      "youtubeId": "JjH8AfUIB8E",
+      "title": "News Podcast Episode",
+      "channel": "Your Channel",
+      "description": "Embedded YouTube episode."
+    },
+    {
+      "youtubeId": "45OISlCdnDk",
+      "title": "News Podcast Episode 2",
+      "channel": "Your Channel",
+      "description": "Embedded YouTube episode."
+    },
+    {
+      "youtubeId": "fuRRCZRcE0qMAUPn",
+      "title": "News Podcast Episode 3",
+      "channel": "Your Channel",
+      "description": "Embedded YouTube episode."
+    }
+  ]
+}

@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewsPortal Admin</title>
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:#0f0f23;color:#fff;margin:0}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    h1{font-size:1.8rem;margin:0 0 16px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:16px;margin:12px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    label{display:block;font-size:.9rem;color:#cfd3dc;margin:6px 0 4px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:#fff}
+    textarea{min-height:80px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .btn{background:linear-gradient(45deg,#ff6b6b,#4ecdc4);border:none;color:#fff;padding:10px 16px;border-radius:999px;cursor:pointer;font-weight:700}
+    .btn.sec{background:rgba(255,255,255,.12)}
+    .btn.danger{background:#dc3545}
+    .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:8px 0}
+    .muted{color:#9aa0a6;font-size:.9rem}
+    .list-item{border:1px dashed rgba(255,255,255,.2);border-radius:10px;padding:12px;margin:8px 0}
+    .divider{height:1px;background:rgba(255,255,255,.15);margin:16px 0}
+    .upload-section{border:2px dashed rgba(255,255,255,.3);border-radius:8px;padding:20px;text-align:center;margin:10px 0}
+    .upload-section.dragover{border-color:#4ecdc4}
+    .success{color:#28a745}
+    .error{color:#dc3545}
+    /* Login styles */
+    .login-container{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px}
+    .login-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:32px;max-width:400px;width:100%}
+    .login-card h1{text-align:center;margin-bottom:24px;background:linear-gradient(45deg,#ff6b6b,#4ecdc4);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .login-card input{margin-bottom:16px}
+    .login-card .btn{width:100%;padding:14px}
+    .login-error{color:#dc3545;text-align:center;margin-bottom:16px;min-height:20px}
+    .hidden{display:none !important}
+    .header-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .logout-btn{background:rgba(255,255,255,.12);font-size:.9rem;padding:8px 16px}
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-card">
+      <h1>Admin Login</h1>
+      <div id="loginError" class="login-error"></div>
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter admin password" autocomplete="current-password" />
+      <button class="btn" id="loginBtn">Login</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel (hidden until authenticated) -->
+  <div id="adminPanel" class="wrap hidden">
+    <div class="header-bar">
+      <h1>NewsPortal Admin</h1>
+      <button class="btn logout-btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Upload Files</strong>
+      </div>
+      <div class="upload-section" id="articleUpload">
+        <div>Drop HTML article files here or click to browse</div>
+        <input type="file" id="articleFile" accept=".html" multiple style="display:none" />
+      </div>
+      <div class="upload-section" id="imageUpload">
+        <div>Drop image files here or click to browse</div>
+        <input type="file" id="imageFile" accept="image/*" multiple style="display:none" />
+      </div>
+      <div id="uploadStatus"></div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Latest News</strong>
+        <button class="btn" id="addNews">+ Add News</button>
+      </div>
+      <div id="newsList"></div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Create New Article</strong>
+      </div>
+      <p class="muted" style="margin-bottom:12px;">Create a new article that will be dynamically served from the API. Fill in the details below to get started.</p>
+      <div class="grid">
+        <div>
+          <label>Article Filename (without .html):</label>
+          <input type="text" id="newArticleFilename" placeholder="e.g., new-discovery-2025" />
+        </div>
+        <div>
+          <label>Title:</label>
+          <input type="text" id="newArticleTitle" placeholder="Article headline" />
+        </div>
+        <div>
+          <label>Category:</label>
+          <select id="newArticleCategory">
+            <option value="Technology">Technology</option>
+            <option value="Environment">Environment</option>
+            <option value="Space">Space</option>
+            <option value="Health">Health</option>
+            <option value="Science">Science</option>
+            <option value="Business">Business</option>
+            <option value="Politics">Politics</option>
+            <option value="Culture">Culture</option>
+          </select>
+        </div>
+        <div>
+          <label>Excerpt (short summary):</label>
+          <textarea id="newArticleExcerpt" placeholder="Brief summary for news cards..." style="min-height:60px;"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Full Article Content:</label>
+        <textarea id="newArticleBody" placeholder="Write the full article content here. You can use multiple paragraphs..." style="min-height:200px;"></textarea>
+      </div>
+      <div class="bar" style="margin-top:12px;">
+        <button class="btn" id="createArticle">Create Article</button>
+        <span id="createArticleStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Article Editor</strong>
+      </div>
+      <div class="row">
+        <select id="articleSelect">
+          <option value="">Select an article to edit...</option>
+        </select>
+        <button class="btn" id="loadArticle">Load Article</button>
+      </div>
+      <textarea id="articleContent" placeholder="Article HTML content will appear here..." style="min-height:400px;margin-top:12px;"></textarea>
+      <div class="bar" style="margin-top:12px;">
+        <button class="btn" id="saveArticle">Save Article</button>
+        <span id="articleStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Add New Video</strong>
+      </div>
+      <p class="muted" style="margin-bottom:12px;">Add a new video directly by entering the details below. You can get the YouTube ID from the video URL (e.g., https://youtube.com/watch?v=<strong>JjH8AfUIB8E</strong>).</p>
+      <div class="grid">
+        <div>
+          <label>YouTube ID (required):</label>
+          <input type="text" id="newVideoYoutubeId" placeholder="e.g., JjH8AfUIB8E" />
+        </div>
+        <div>
+          <label>Title (required):</label>
+          <input type="text" id="newVideoTitle" placeholder="Video title" />
+        </div>
+        <div>
+          <label>Channel:</label>
+          <input type="text" id="newVideoChannel" placeholder="Channel name" />
+        </div>
+        <div>
+          <label>Description:</label>
+          <textarea id="newVideoDescription" placeholder="Video description" style="min-height:60px;"></textarea>
+        </div>
+      </div>
+      <div id="newVideoPreview" style="display:none;margin-top:12px;border-radius:10px;overflow:hidden;background:rgba(0,0,0,.3);">
+        <div style="position:relative;padding-top:56.25%;width:100%;">
+          <iframe id="previewIframe" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="bar" style="margin-top:12px;">
+        <button class="btn sec" id="previewNewVideo">Preview</button>
+        <button class="btn" id="addNewVideo">Add Video</button>
+        <span id="newVideoStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Video Editor</strong>
+      </div>
+      <div class="row">
+        <select id="videoSelect">
+          <option value="">Select a video to edit...</option>
+        </select>
+        <button class="btn" id="loadVideo">Load Video</button>
+      </div>
+      <div style="margin-top:12px;">
+        <label>YouTube ID:</label>
+        <input type="text" id="videoYoutubeId" placeholder="e.g., JjH8AfUIB8E" style="width:100%;margin-bottom:8px;" />
+        <label>Title:</label>
+        <input type="text" id="videoTitle" placeholder="Video title" style="width:100%;margin-bottom:8px;" />
+        <label>Channel:</label>
+        <input type="text" id="videoChannel" placeholder="Channel name" style="width:100%;margin-bottom:8px;" />
+        <label>Description:</label>
+        <textarea id="videoDescription" placeholder="Video description" style="width:100%;min-height:80px;margin-bottom:8px;"></textarea>
+      </div>
+      <div class="bar" style="margin-top:12px;">
+        <button class="btn" id="saveVideo">Save Video</button>
+        <span id="videoStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Video Podcasts</strong>
+      </div>
+      <div id="videoList"></div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>Trending Articles</strong>
+        <button class="btn" id="addTrending">+ Add Trending</button>
+      </div>
+      <div id="trendingList"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+
+    // Session management
+    let sessionId = localStorage.getItem('adminSessionId');
+
+    // Auth functions
+    async function checkAuth() {
+      if (!sessionId) {
+        showLogin();
+        return false;
+      }
+      try {
+        const response = await fetch(`${API_BASE}/auth/verify`, {
+          headers: { 'X-Session-Id': sessionId }
+        });
+        const data = await response.json();
+        if (data.authenticated) {
+          showAdmin();
+          return true;
+        }
+      } catch (e) {
+        console.error('Auth check failed:', e);
+      }
+      localStorage.removeItem('adminSessionId');
+      sessionId = null;
+      showLogin();
+      return false;
+    }
+
+    async function login(password) {
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await response.json();
+        if (data.success && data.sessionId) {
+          sessionId = data.sessionId;
+          localStorage.setItem('adminSessionId', sessionId);
+          showAdmin();
+          initAdmin();
+          return true;
+        }
+        return false;
+      } catch (e) {
+        console.error('Login failed:', e);
+        return false;
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'X-Session-Id': sessionId }
+        });
+      } catch (e) {
+        // Ignore logout errors
+      }
+      localStorage.removeItem('adminSessionId');
+      sessionId = null;
+      showLogin();
+    }
+
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('adminPanel').classList.add('hidden');
+    }
+
+    function showAdmin() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+    }
+
+    // Login form handlers
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('loginError');
+      if (!password) {
+        errorEl.textContent = 'Please enter a password';
+        return;
+      }
+      errorEl.textContent = '';
+      const success = await login(password);
+      if (!success) {
+        errorEl.textContent = 'Invalid password';
+        document.getElementById('password').value = '';
+      }
+    });
+
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('loginBtn').click();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    const state = { news: [], videos: [], trending: [] };
+
+    const els = {
+      newsList: document.getElementById('newsList'),
+      videoList: document.getElementById('videoList'),
+      trendingList: document.getElementById('trendingList'),
+      addNews: document.getElementById('addNews'),
+      addTrending: document.getElementById('addTrending'),
+      articleUpload: document.getElementById('articleUpload'),
+      imageUpload: document.getElementById('imageUpload'),
+      articleFile: document.getElementById('articleFile'),
+      imageFile: document.getElementById('imageFile'),
+      uploadStatus: document.getElementById('uploadStatus'),
+      articleSelect: document.getElementById('articleSelect'),
+      loadArticle: document.getElementById('loadArticle'),
+      articleContent: document.getElementById('articleContent'),
+      saveArticle: document.getElementById('saveArticle'),
+      articleStatus: document.getElementById('articleStatus'),
+      videoSelect: document.getElementById('videoSelect'),
+      loadVideo: document.getElementById('loadVideo'),
+      videoYoutubeId: document.getElementById('videoYoutubeId'),
+      videoTitle: document.getElementById('videoTitle'),
+      videoChannel: document.getElementById('videoChannel'),
+      videoDescription: document.getElementById('videoDescription'),
+      saveVideo: document.getElementById('saveVideo'),
+      videoStatus: document.getElementById('videoStatus'),
+      // New video form elements
+      newVideoYoutubeId: document.getElementById('newVideoYoutubeId'),
+      newVideoTitle: document.getElementById('newVideoTitle'),
+      newVideoChannel: document.getElementById('newVideoChannel'),
+      newVideoDescription: document.getElementById('newVideoDescription'),
+      newVideoPreview: document.getElementById('newVideoPreview'),
+      previewIframe: document.getElementById('previewIframe'),
+      previewNewVideo: document.getElementById('previewNewVideo'),
+      addNewVideo: document.getElementById('addNewVideo'),
+      newVideoStatus: document.getElementById('newVideoStatus'),
+      // New article form elements
+      newArticleFilename: document.getElementById('newArticleFilename'),
+      newArticleTitle: document.getElementById('newArticleTitle'),
+      newArticleCategory: document.getElementById('newArticleCategory'),
+      newArticleExcerpt: document.getElementById('newArticleExcerpt'),
+      newArticleBody: document.getElementById('newArticleBody'),
+      createArticle: document.getElementById('createArticle'),
+      createArticleStatus: document.getElementById('createArticleStatus'),
+    };
+
+    async function apiRequest(url, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(sessionId ? { 'X-Session-Id': sessionId } : {}),
+        ...(options.headers || {})
+      };
+      const response = await fetch(`${API_BASE}${url}`, {
+        ...options,
+        headers
+      });
+      if (response.status === 401) {
+        // Session expired or invalid
+        localStorage.removeItem('adminSessionId');
+        sessionId = null;
+        showLogin();
+        throw new Error('Authentication required');
+      }
+      if (!response.ok) throw new Error(`API Error: ${response.status}`);
+      return response.json();
+    }
+
+    async function loadData() {
+      try {
+        const [news, videos, trending] = await Promise.all([
+          apiRequest('/news'),
+          apiRequest('/videos'),
+          apiRequest('/trending')
+        ]);
+        state.news = news;
+        state.videos = videos;
+        state.trending = trending;
+        render();
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        showStatus('Failed to load data', 'error');
+      }
+    }
+
+    function render() {
+      renderNews();
+      renderVideos();
+      renderTrending();
+    }
+
+    function renderNews() {
+      els.newsList.innerHTML = '';
+      state.news.forEach((n, i) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="grid">
+            <div>
+              <label>Title</label>
+              <input value="${esc(n.title || '')}" data-id="${n._id}" data-k="title">
+            </div>
+            <div>
+              <label>Category</label>
+              <input value="${esc(n.category || '')}" data-id="${n._id}" data-k="category">
+            </div>
+            <div>
+              <label>Time</label>
+              <input value="${esc(n.time || '')}" data-id="${n._id}" data-k="time">
+            </div>
+            <div>
+              <label>Excerpt</label>
+              <textarea data-id="${n._id}" data-k="excerpt">${esc(n.excerpt || '')}</textarea>
+            </div>
+            <div>
+              <label>Article link (href)</label>
+              <input value="${esc(n.href || '')}" data-id="${n._id}" data-k="href">
+            </div>
+          </div>
+          <div class="bar">
+            <span class="muted">ID: ${n._id}</span>
+            <button class="btn danger" data-act="deleteNews" data-id="${n._id}">Delete</button>
+          </div>
+        `;
+        els.newsList.appendChild(div);
+      });
+    }
+
+    function renderVideos() {
+      els.videoList.innerHTML = '';
+      state.videos.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="grid">
+            <div>
+              <label>YouTube ID</label>
+              <input value="${esc(v.youtubeId || '')}" data-id="${v._id}" data-k="youtubeId" data-type="video">
+            </div>
+            <div>
+              <label>Title</label>
+              <input value="${esc(v.title || '')}" data-id="${v._id}" data-k="title" data-type="video">
+            </div>
+            <div>
+              <label>Channel</label>
+              <input value="${esc(v.channel || '')}" data-id="${v._id}" data-k="channel" data-type="video">
+            </div>
+            <div>
+              <label>Description</label>
+              <textarea data-id="${v._id}" data-k="description" data-type="video">${esc(v.description || '')}</textarea>
+            </div>
+          </div>
+          <div class="bar">
+            <span class="muted">ID: ${v._id}</span>
+            <button class="btn danger" data-act="deleteVideo" data-id="${v._id}">Delete</button>
+          </div>
+        `;
+        els.videoList.appendChild(div);
+      });
+    }
+
+    function renderTrending() {
+      els.trendingList.innerHTML = '';
+      state.trending.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="grid">
+            <div>
+              <label>Number</label>
+              <input type="number" value="${t.number || 1}" data-id="${t._id}" data-k="number" data-type="trending">
+            </div>
+            <div>
+              <label>Title</label>
+              <input value="${esc(t.title || '')}" data-id="${t._id}" data-k="title" data-type="trending">
+            </div>
+            <div>
+              <label>Description</label>
+              <textarea data-id="${t._id}" data-k="description" data-type="trending">${esc(t.description || '')}</textarea>
+            </div>
+            <div>
+              <label>Article link (href)</label>
+              <input value="${esc(t.href || '')}" data-id="${t._id}" data-k="href" data-type="trending">
+            </div>
+          </div>
+          <div class="bar">
+            <span class="muted">ID: ${t._id}</span>
+            <button class="btn danger" data-act="deleteTrending" data-id="${t._id}">Delete</button>
+          </div>
+        `;
+        els.trendingList.appendChild(div);
+      });
+    }
+
+    function esc(s=''){ return String(s).replace(/&/g,'&amp;').replace(/</g,'<').replace(/>/g,'>') }
+
+    function showStatus(message, type = 'success') {
+      els.uploadStatus.innerHTML = `<div class="${type}">${message}</div>`;
+      setTimeout(() => { els.uploadStatus.innerHTML = ''; }, 5000);
+    }
+
+    // Initialize admin panel (called after successful auth)
+    function initAdmin() {
+      loadData();
+      loadArticleList();
+      loadVideoList();
+    }
+
+    // Check authentication on page load
+    checkAuth().then(authenticated => {
+      if (authenticated) {
+        initAdmin();
+      }
+    });
+
+    // Add items
+    els.addNews.addEventListener('click', async () => {
+      try {
+        const newItem = { title: '', category: '', time: '', excerpt: '', href: '' };
+        const result = await apiRequest('/news', { method: 'POST', body: JSON.stringify(newItem) });
+        state.news.unshift(result);
+        render();
+        loadArticleList(); // Refresh article dropdown to include new item
+        showStatus('News item added');
+      } catch (error) {
+        showStatus('Failed to add news item', 'error');
+      }
+    });
+
+    // Preview new video
+    els.previewNewVideo.addEventListener('click', () => {
+      const youtubeId = els.newVideoYoutubeId.value.trim();
+      if (!youtubeId) {
+        showNewVideoStatus('Please enter a YouTube ID first', 'error');
+        return;
+      }
+      els.previewIframe.src = `https://www.youtube.com/embed/${encodeURIComponent(youtubeId)}`;
+      els.newVideoPreview.style.display = 'block';
+      showNewVideoStatus('Preview loaded');
+    });
+
+    // Add new video with all details
+    els.addNewVideo.addEventListener('click', async () => {
+      const youtubeId = els.newVideoYoutubeId.value.trim();
+      const title = els.newVideoTitle.value.trim();
+      const channel = els.newVideoChannel.value.trim();
+      const description = els.newVideoDescription.value.trim();
+
+      if (!youtubeId) {
+        showNewVideoStatus('YouTube ID is required', 'error');
+        return;
+      }
+      if (!title) {
+        showNewVideoStatus('Title is required', 'error');
+        return;
+      }
+
+      try {
+        const newItem = { youtubeId, title, channel, description };
+        const result = await apiRequest('/videos', { method: 'POST', body: JSON.stringify(newItem) });
+        state.videos.push(result);
+        render();
+        loadVideoList(); // Refresh video dropdown
+
+        // Clear the form
+        els.newVideoYoutubeId.value = '';
+        els.newVideoTitle.value = '';
+        els.newVideoChannel.value = '';
+        els.newVideoDescription.value = '';
+        els.newVideoPreview.style.display = 'none';
+        els.previewIframe.src = '';
+
+        showNewVideoStatus('Video added successfully!');
+      } catch (error) {
+        showNewVideoStatus('Failed to add video', 'error');
+      }
+    });
+
+    function showNewVideoStatus(message, type = 'success') {
+      els.newVideoStatus.innerHTML = `<span class="${type}">${message}</span>`;
+      setTimeout(() => { els.newVideoStatus.innerHTML = ''; }, 5000);
+    }
+
+    // Create new article functionality
+    function showCreateArticleStatus(message, type = 'success') {
+      els.createArticleStatus.innerHTML = `<span class="${type}">${message}</span>`;
+      setTimeout(() => { els.createArticleStatus.innerHTML = ''; }, 5000);
+    }
+
+    function generateArticleHtml(title, category, content) {
+      // Split content into paragraphs
+      const paragraphs = content.split('\n\n').filter(p => p.trim());
+      const paragraphsHtml = paragraphs.map(p => `<p>${p.trim()}</p>`).join('\n            ');
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - NewsPortal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #ffffff;
+            line-height: 1.8;
+            min-height: 100vh;
+        }
+        .article-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .back-link {
+            display: inline-block;
+            color: #4ecdc4;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        .category {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .article-content { color: #b8b8b8; }
+        .article-content p { margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <article class="article-container">
+        <a href="/" class="back-link">← Back to News</a>
+        <div class="article-meta">
+            <span class="category">${category}</span>
+            <span>Just now</span>
+        </div>
+        <h1>${title}</h1>
+        <div class="article-content">
+            ${paragraphsHtml}
+        </div>
+    </article>
+</body>
+</html>`;
+    }
+
+    els.createArticle.addEventListener('click', async () => {
+      const filename = els.newArticleFilename.value.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const title = els.newArticleTitle.value.trim();
+      const category = els.newArticleCategory.value;
+      const excerpt = els.newArticleExcerpt.value.trim();
+      const body = els.newArticleBody.value.trim();
+
+      if (!filename) {
+        showCreateArticleStatus('Filename is required', 'error');
+        return;
+      }
+      if (!title) {
+        showCreateArticleStatus('Title is required', 'error');
+        return;
+      }
+      if (!body) {
+        showCreateArticleStatus('Article content is required', 'error');
+        return;
+      }
+
+      try {
+        // Generate the full HTML content
+        const htmlContent = generateArticleHtml(title, category, body);
+        const fullFilename = filename + '.html';
+
+        // Save the article content
+        await apiRequest(`/articles/${fullFilename}`, {
+          method: 'PUT',
+          body: JSON.stringify({ content: htmlContent })
+        });
+
+        // Create a news entry for this article
+        const newsItem = {
+          title: title,
+          category: category,
+          time: 'Just now',
+          excerpt: excerpt || body.substring(0, 150) + '...',
+          href: 'articles/' + fullFilename
+        };
+        const newsResult = await apiRequest('/news', { method: 'POST', body: JSON.stringify(newsItem) });
+        state.news.unshift(newsResult);
+        render();
+
+        // Clear the form
+        els.newArticleFilename.value = '';
+        els.newArticleTitle.value = '';
+        els.newArticleExcerpt.value = '';
+        els.newArticleBody.value = '';
+
+        showCreateArticleStatus('Article created successfully!');
+        loadArticleList();
+      } catch (error) {
+        console.error('Failed to create article:', error);
+        showCreateArticleStatus('Failed to create article', 'error');
+      }
+    });
+
+    els.addTrending.addEventListener('click', async () => {
+      try {
+        const newItem = { number: state.trending.length + 1, title: '', description: '', href: '' };
+        const result = await apiRequest('/trending', { method: 'POST', body: JSON.stringify(newItem) });
+        state.trending.push(result);
+        render();
+        loadArticleList(); // Refresh article dropdown to include new item
+        showStatus('Trending item added');
+      } catch (error) {
+        showStatus('Failed to add trending item', 'error');
+      }
+    });
+
+    // Update items on input
+    document.body.addEventListener('input', async (e) => {
+      const id = e.target.getAttribute('data-id');
+      const key = e.target.getAttribute('data-k');
+      const type = e.target.getAttribute('data-type');
+      if (!id || !key) return;
+
+      const value = e.target.value;
+      const endpoint = type === 'video' ? '/videos' : type === 'trending' ? '/trending' : '/news';
+
+      try {
+        await apiRequest(`${endpoint}/${id}`, { method: 'PUT', body: JSON.stringify({ [key]: value }) });
+        // Update local state
+        const list = type === 'video' ? state.videos : type === 'trending' ? state.trending : state.news;
+        const item = list.find(item => item._id === id);
+        if (item) item[key] = value;
+        // Refresh article list when title or href changes for news/trending items
+        if ((key === 'title' || key === 'href') && type !== 'video') {
+          loadArticleList();
+        }
+      } catch (error) {
+        console.error('Failed to update:', error);
+      }
+    });
+
+    // Delete items
+    document.body.addEventListener('click', async (e) => {
+      const act = e.target.getAttribute('data-act');
+      const id = e.target.getAttribute('data-id');
+      if (!act || !id) return;
+
+      try {
+        if (act === 'deleteNews') {
+          await apiRequest(`/news/${id}`, { method: 'DELETE' });
+          state.news = state.news.filter(n => n._id !== id);
+          loadArticleList(); // Refresh article dropdown after deletion
+        } else if (act === 'deleteVideo') {
+          await apiRequest(`/videos/${id}`, { method: 'DELETE' });
+          state.videos = state.videos.filter(v => v._id !== id);
+        } else if (act === 'deleteTrending') {
+          await apiRequest(`/trending/${id}`, { method: 'DELETE' });
+          state.trending = state.trending.filter(t => t._id !== id);
+          loadArticleList(); // Refresh article dropdown after deletion
+        }
+        render();
+        showStatus('Item deleted');
+      } catch (error) {
+        showStatus('Failed to delete item', 'error');
+      }
+    });
+
+    // File uploads
+    function setupUpload(uploadEl, fileEl, endpoint) {
+      uploadEl.addEventListener('click', () => fileEl.click());
+      uploadEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadEl.classList.add('dragover');
+      });
+      uploadEl.addEventListener('dragleave', () => uploadEl.classList.remove('dragover'));
+      uploadEl.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        uploadEl.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        await uploadFiles(files, endpoint);
+      });
+      fileEl.addEventListener('change', async (e) => {
+        await uploadFiles(e.target.files, endpoint);
+      });
+    }
+
+    async function uploadFiles(files, endpoint) {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const headers = sessionId ? { 'X-Session-Id': sessionId } : {};
+          const response = await fetch(`${API_BASE}/upload/${endpoint}`, {
+            method: 'POST',
+            headers,
+            body: formData
+          });
+          if (response.status === 401) {
+            localStorage.removeItem('adminSessionId');
+            sessionId = null;
+            showLogin();
+            throw new Error('Authentication required');
+          }
+          if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+          const result = await response.json();
+          showStatus(`Uploaded ${result.filename}`);
+        } catch (error) {
+          showStatus(`Failed to upload ${file.name}`, 'error');
+        }
+      }
+    }
+
+    setupUpload(els.articleUpload, els.articleFile, 'article');
+    setupUpload(els.imageUpload, els.imageFile, 'image');
+
+    // Article editor functions
+    async function loadArticleList() {
+      try {
+        // Get list of article files from news and trending items
+        const [news, trending] = await Promise.all([
+          apiRequest('/news'),
+          apiRequest('/trending')
+        ]);
+
+        // Include all articles with .html href (with or without articles/ prefix)
+        const newsArticles = news.filter(item => item.href && item.href.endsWith('.html'));
+        const trendingArticles = trending.filter(item => item.href && item.href.endsWith('.html'));
+
+        els.articleSelect.innerHTML = '<option value="">Select an article to edit...</option>';
+
+        // Add news articles
+        newsArticles.forEach(item => {
+          // Extract filename, removing articles/ prefix if present
+          const filename = item.href.startsWith('articles/')
+            ? item.href.replace('articles/', '')
+            : item.href;
+          const option = document.createElement('option');
+          option.value = filename;
+          option.textContent = `📰 ${item.title} (${filename})`;
+          els.articleSelect.appendChild(option);
+        });
+
+        // Add trending articles
+        trendingArticles.forEach(item => {
+          // Extract filename, removing articles/ prefix if present
+          const filename = item.href.startsWith('articles/')
+            ? item.href.replace('articles/', '')
+            : item.href;
+          const option = document.createElement('option');
+          option.value = filename;
+          option.textContent = `🔥 ${item.title} (${filename})`;
+          els.articleSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Failed to load article list:', error);
+      }
+    }
+
+    els.loadArticle.addEventListener('click', async () => {
+      const filename = els.articleSelect.value;
+      if (!filename) {
+        showStatus('Please select an article first', 'error');
+        return;
+      }
+
+      try {
+        const headers = { 'Accept': 'application/json' };
+        if (sessionId) headers['X-Session-Id'] = sessionId;
+        const response = await fetch(`${API_BASE}/articles/${filename}`, {
+          headers
+        });
+        if (response.status === 401) {
+          localStorage.removeItem('adminSessionId');
+          sessionId = null;
+          showLogin();
+          throw new Error('Authentication required');
+        }
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        const data = await response.json();
+        els.articleContent.value = data.content;
+        showStatus('Article loaded successfully');
+      } catch (error) {
+        showStatus('Failed to load article', 'error');
+      }
+    });
+
+    els.saveArticle.addEventListener('click', async () => {
+      const filename = els.articleSelect.value;
+      const content = els.articleContent.value;
+
+      if (!filename) {
+        showStatus('Please select an article first', 'error');
+        return;
+      }
+
+      if (!content.trim()) {
+        showStatus('Article content cannot be empty', 'error');
+        return;
+      }
+
+      try {
+        await apiRequest(`/articles/${filename}`, {
+          method: 'PUT',
+          body: JSON.stringify({ content })
+        });
+        showStatus('Article saved successfully');
+      } catch (error) {
+        showStatus('Failed to save article', 'error');
+      }
+    });
+
+    // Video editor functions
+    async function loadVideoList() {
+      try {
+        const videos = await apiRequest('/videos');
+
+        els.videoSelect.innerHTML = '<option value="">Select a video to edit...</option>';
+        videos.forEach((video, index) => {
+          const option = document.createElement('option');
+          option.value = index; // Use index as identifier
+          option.textContent = `🎥 ${video.title} (${video.youtubeId})`;
+          els.videoSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Failed to load video list:', error);
+      }
+    }
+
+    els.loadVideo.addEventListener('click', async () => {
+      const videoIndex = els.videoSelect.value;
+      if (videoIndex === '') {
+        showStatus('Please select a video first', 'error');
+        return;
+      }
+
+      try {
+        const videos = await apiRequest('/videos');
+        const video = videos[videoIndex];
+
+        els.videoYoutubeId.value = video.youtubeId || '';
+        els.videoTitle.value = video.title || '';
+        els.videoChannel.value = video.channel || '';
+        els.videoDescription.value = video.description || '';
+
+        showStatus('Video loaded successfully');
+      } catch (error) {
+        showStatus('Failed to load video', 'error');
+      }
+    });
+
+    els.saveVideo.addEventListener('click', async () => {
+      const videoIndex = els.videoSelect.value;
+      if (videoIndex === '') {
+        showStatus('Please select a video first', 'error');
+        return;
+      }
+
+      const updatedVideo = {
+        youtubeId: els.videoYoutubeId.value.trim(),
+        title: els.videoTitle.value.trim(),
+        channel: els.videoChannel.value.trim(),
+        description: els.videoDescription.value.trim()
+      };
+
+      if (!updatedVideo.youtubeId || !updatedVideo.title) {
+        showStatus('YouTube ID and Title are required', 'error');
+        return;
+      }
+
+      try {
+        const videos = await apiRequest('/videos');
+        const videoId = videos[videoIndex].id;
+
+        await apiRequest(`/videos/${videoId}`, {
+          method: 'PUT',
+          body: JSON.stringify(updatedVideo)
+        });
+
+        showStatus('Video updated successfully');
+        loadData(); // Refresh the video list
+        loadVideoList(); // Refresh the video selector
+      } catch (error) {
+        showStatus('Failed to save video', 'error');
+      }
+    });
+
+    // Update article and video lists when data changes
+    const originalLoadData = loadData;
+    loadData = async () => {
+      await originalLoadData();
+      loadArticleList();
+      loadVideoList();
+    };
+  </script>
+</body>
+</html>

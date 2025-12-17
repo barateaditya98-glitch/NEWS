@@ -1,0 +1,16 @@
+{
+  "name": "newsportal",
+  "version": "1.0.0",
+  "description": "News Portal with Netlify Functions API",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0",
+    "@netlify/functions": "^2.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

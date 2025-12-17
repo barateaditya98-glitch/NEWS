@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Article... - NewsPortal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --text-muted: #888;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-primary: #ff6b6b;
+            --accent-secondary: #4ecdc4;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.9);
+            --text-primary: #2c3e50;
+            --text-secondary: #555;
+            --text-muted: #777;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            height: 60px;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logo img {
+            height: 100%;
+            width: auto;
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            width: 60px;
+            height: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .theme-toggle-slider.moon {
+            transform: translateX(30px);
+        }
+
+        .theme-toggle-slider.sun::before { content: '\u2600\ufe0f'; }
+        .theme-toggle-slider.moon::before { content: '\ud83c\udf19'; }
+
+        .article-container {
+            max-width: 800px;
+            margin: 100px auto 50px;
+            padding: 2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-secondary);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(78, 205, 196, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .category {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .article-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .article-content {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content h2 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            margin: 2rem 0 1rem;
+        }
+
+        .article-content h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid var(--accent-secondary);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 4rem;
+            color: var(--accent-primary);
+        }
+
+        .error-message h2 {
+            margin-bottom: 1rem;
+        }
+
+        .related-articles {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .related-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .related-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .related-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .related-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .related-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .article-title {
+                font-size: 2rem;
+            }
+
+            .article-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/" class="logo">
+                <img src="logo.jpg" alt="NewsPortal Logo">
+            </a>
+            <div class="theme-toggle" id="themeToggle">
+                <div class="theme-toggle-slider sun" id="themeSlider"></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="article-container">
+        <a href="/" class="back-link">
+            <span>&larr;</span> Back to News
+        </a>
+
+        <div id="articleContent">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading article...</p>
+            </div>
+        </div>
+
+        <section class="related-articles" id="relatedArticles" style="display: none;">
+            <h3 class="related-title">Related Articles</h3>
+            <div class="related-grid" id="relatedGrid"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2025 NewsPortal. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeSlider = document.getElementById('themeSlider');
+        const body = document.body;
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            body.setAttribute('data-theme', 'light');
+            themeSlider.classList.remove('sun');
+            themeSlider.classList.add('moon');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                body.removeAttribute('data-theme');
+                themeSlider.classList.remove('moon');
+                themeSlider.classList.add('sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeSlider.classList.remove('sun');
+                themeSlider.classList.add('moon');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Get article slug from URL
+        function getArticleSlug() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('slug') || params.get('id');
+        }
+
+        // Escape HTML for security
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Load article content
+        async function loadArticle() {
+            const slug = getArticleSlug();
+            const contentDiv = document.getElementById('articleContent');
+
+            if (!slug) {
+                contentDiv.innerHTML = `
+                    <div class="error-message">
+                        <h2>Article Not Found</h2>
+                        <p>No article was specified. Please select an article from the homepage.</p>
+                        <a href="/" class="back-link" style="display: inline-flex; margin-top: 1rem;">
+                            <span>&larr;</span> Go to Homepage
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // First try to load from the articles API
+                const response = await fetch(`/api/articles/${slug}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.content) {
+                        // If we have stored HTML content, render it
+                        contentDiv.innerHTML = data.content;
+                        document.title = `${extractTitle(data.content)} - NewsPortal`;
+                        loadRelatedArticles(slug);
+                        return;
+                    }
+                }
+
+                // Try to find article in news list for metadata
+                const newsResponse = await fetch('/api/news');
+                const news = await newsResponse.json();
+                const article = news.find(n => {
+                    const href = n.href || '';
+                    return href.includes(slug) || href.endsWith(slug);
+                });
+
+                if (article) {
+                    // Generate article page from news metadata
+                    contentDiv.innerHTML = `
+                        <div class="article-meta">
+                            <span class="category">${escapeHtml(article.category)}</span>
+                            <span>${escapeHtml(article.time)}</span>
+                        </div>
+                        <h1 class="article-title">${escapeHtml(article.title)}</h1>
+                        <div class="article-content">
+                            <p>${escapeHtml(article.excerpt)}</p>
+                            <p>This article is being dynamically loaded from the NewsPortal content management system.
+                            Full article content can be added through the admin panel.</p>
+                        </div>
+                    `;
+                    document.title = `${article.title} - NewsPortal`;
+                    loadRelatedArticles(slug);
+                } else {
+                    throw new Error('Article not found');
+                }
+            } catch (error) {
+                console.error('Failed to load article:', error);
+                contentDiv.innerHTML = `
+                    <div class="error-message">
+                        <h2>Article Not Found</h2>
+                        <p>We couldn't find the article you're looking for.</p>
+                        <a href="/" class="back-link" style="display: inline-flex; margin-top: 1rem;">
+                            <span>&larr;</span> Go to Homepage
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        // Extract title from HTML content
+        function extractTitle(html) {
+            const match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+            return match ? match[1] : 'Article';
+        }
+
+        // Load related articles
+        async function loadRelatedArticles(currentSlug) {
+            try {
+                const response = await fetch('/api/news');
+                const news = await response.json();
+
+                // Get articles excluding current one
+                const related = news
+                    .filter(n => !n.href?.includes(currentSlug))
+                    .slice(0, 3);
+
+                if (related.length > 0) {
+                    const grid = document.getElementById('relatedGrid');
+                    grid.innerHTML = related.map(article => {
+                        const articleHref = article.href?.startsWith('articles/')
+                            ? `/article.html?slug=${article.href.replace('articles/', '')}`
+                            : (article.href ? `/article.html?slug=${article.href}` : '#');
+
+                        return `
+                            <a href="${articleHref}" class="related-card">
+                                <h4>${escapeHtml(article.title)}</h4>
+                                <p>${escapeHtml(article.excerpt?.substring(0, 80))}...</p>
+                            </a>
+                        `;
+                    }).join('');
+
+                    document.getElementById('relatedArticles').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load related articles:', error);
+            }
+        }
+
+        // Initialize
+        loadArticle();
+    </script>
+</body>
+</html>
