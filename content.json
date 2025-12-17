@@ -62,5 +62,11 @@
       "channel": "Your Channel",
       "description": "Embedded YouTube episode."
     }
+    {
+     "youtubeId": "N0mgGpHnyfyw1A6y",
+      "title": "News Podcast Episode 3",
+      "channel": "Your Channel",
+      "description": "Embedded YouTube episode."",
+    }
   ]
 }
