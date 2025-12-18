@@ -1,59 +1,28 @@
-functionsDirectory = "netlify/functions"
-functionsDirectoryOrigin = "config"
-plugins = []
-headers = []
-
 [build]
-publish = "."
-publishOrigin = "config"
-functions = "netlify/functions"
+  publish = "."
+  functions = "netlify/functions"
 
-  [build.environment]
+[build.environment]
   NODE_VERSION = "20"
 
-  [build.processing]
-
-    [build.processing.css]
-
-    [build.processing.html]
-
-    [build.processing.images]
-
-    [build.processing.js]
-
-  [build.services]
-
 [functions]
-
-  [functions."*"]
   node_bundler = "esbuild"
 
+# API routes - must come before catch-all
 [[redirects]]
-from = "/api/*"
-to = "/.netlify/functions/api/:splat"
-status = 200
-force = false
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
 
-  [redirects.query]
-
-  [redirects.conditions]
-
-  [redirects.headers]
-
+# Trending anchor redirect
 [[redirects]]
-from = "/trending"
-to = "/#trending"
-status = 301
-force = true
+  from = "/trending"
+  to = "/#trending"
+  status = 301
+  force = true
 
+# SPA fallback - only for HTML pages (not static files)
 [[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-force = false
-
-  [redirects.query]
-
-  [redirects.conditions]
-
-  [redirects.headers]
+  from = "/*"
+  to = "/index.html"
+  status = 200
